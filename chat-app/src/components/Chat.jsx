@@ -18,7 +18,7 @@ const Chat = () => {
         file: null,
         url: "",
     });
-    const {chatId, user,isCurrentUserBlocked, isRecieverBlocked} = useChatStore();
+    const {chatId, user,isCurrentUserBlocked, isRecieverBlocked,changeChat} = useChatStore();
     const {currentUser} = useUserStore();
 
     const endRef = useRef(null);
@@ -31,7 +31,7 @@ const Chat = () => {
         const unsub = onSnapshot(doc(db, "chats",chatId), (res) => {
             setChat(res.data());
         });
-
+ 
         return () => {
             unsub();
         }

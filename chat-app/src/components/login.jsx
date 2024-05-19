@@ -2,8 +2,8 @@ import React from "react";
 import "./login.css";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { createUserWithEmailAndPassword,signInWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../lib/firebase";
+import { createUserWithEmailAndPassword,sendEmailVerification,signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, db, googleProvider } from "../lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import upload from "../lib/upload";
 
@@ -29,18 +29,20 @@ const Login = () => {
         setLoading(true);
 
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const response = await signInWithEmailAndPassword(auth, email, password);
+            if(response.user.emailVerified==false){
+                toast.error("Please verify your email first!");
+                auth.signOut();
+                setLoading(false)
+                return;
+            }
             toast.success("Logged in successfully!");
             
         } catch (error) {
             toast.error(error.message);
             
         }
-
         setLoading(false);
-        
-
-
     }
 
     const handleRegister = async (e) => {
@@ -54,6 +56,7 @@ const Login = () => {
 
             const res = await createUserWithEmailAndPassword(auth, email, password);
             const imageUrl = await upload(avatar.file);
+            const response = await sendEmailVerification(res.user);
 
             await setDoc(doc(db, "users", res.user.uid), {
                 username:username,
@@ -67,13 +70,39 @@ const Login = () => {
             await setDoc(doc(db, "userchats", res.user.uid), {
                 chats:[]
             });
-            toast.success("User created successfully! You Can Login Now!");
+            toast.success("User created successfully!");
+            toast.info("A verification mail has been sent to you. Please verify your email.")
             
         } catch (error) {
             toast.error(error.message);
             
         }
         setLoading(false);
+        auth.signOut();
+
+    }
+
+    const handleGoogleLogin = async () => {
+        try {
+            const response = await signInWithPopup(auth, googleProvider);
+            const userdata  = response.user;
+            await setDoc(doc(db, "users", response.user.uid), {
+                username:response.user.displayName,
+                email:response.user.email,
+                avatar: response.user.photoURL,
+                id:response.user.uid,
+                blocked:[],
+
+            });
+
+            await setDoc(doc(db, "userchats", response.user.uid), {
+                chats:[]
+            });
+            console.log(userdata)
+            toast.success("Sign in successful");
+        } catch (error) {
+            toast.error(error);
+        }
     }
 
     return (
@@ -85,6 +114,10 @@ const Login = () => {
                     <input type="password" placeholder="Password" name="password"/>
                     <button type="submit">{loading ? "Loading..." : "Login"}</button>
                 </form>
+                <div className="google-btn" onClick={handleGoogleLogin}>
+                    <img src="./unnamed.png" alt="Google logo"/>  
+                    Sign in with Google
+                </div>
             </div>
             <div className="seperator"></div>
             <div className="box">

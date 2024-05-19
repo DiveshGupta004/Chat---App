@@ -25,5 +25,16 @@
 
 .icons{
     display: flex;
+    align-items: center;
     gap: 10px;
 }
+
+.icons p{
+    cursor: pointer;
+    padding: 10px;
+}
+
+.icons p:hover{
+    background-color: rgba(17, 25, 40, 0.75);
+}
+

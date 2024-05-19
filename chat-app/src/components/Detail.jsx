@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./detail.css";
 import { auth, db } from "../lib/firebase";
 import { useChatStore } from "../lib/chatStore";
@@ -6,12 +6,12 @@ import { useUserStore } from "../lib/userStore";
 import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
 
 const Detail = () => {
-    const {chatId, user, isCurrentUserBlocked, isRecieverBlocked, changeBlock} = useChatStore();
+    const {chatId, user, isCurrentUserBlocked, isRecieverBlocked, changeBlock, changeChat} = useChatStore();
     const {currentUser} = useUserStore();
 
     // console.log(user);
-    // console.log(isCurrentUserBlocked);
-    // console.log(isRecieverBlocked);
+    console.log(isCurrentUserBlocked);
+    console.log(isRecieverBlocked);
 
     const handleBlock = async () => {
         if(!user) return;

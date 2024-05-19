@@ -8,6 +8,7 @@ import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useUserStore } from './lib/userStore';
 import { useChatStore } from './lib/chatStore';
+import { toast } from 'react-toastify';
 
 const App = () => {
 
@@ -18,6 +19,10 @@ const App = () => {
 
   useEffect(() => {
     const unSub = onAuthStateChanged(auth,(user) => {
+      if(user?.emailVerified==false){
+        auth.signOut();
+        return;
+      }
       if(!user) return fetchUserInfo(null);
       fetchUserInfo(user.uid);
     }
@@ -39,7 +44,9 @@ const App = () => {
             {chatId && <Detail />}
           </>
         ) : (
-          <Login />
+          <>
+            {!currentUser && <Login />}
+          </>
         )
       }
       <Notification />

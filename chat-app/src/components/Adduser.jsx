@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./adduser.css";
-import { arrayUnion, collection, doc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
+import { arrayUnion, collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { toast } from "react-toastify";
 import { useUserStore } from '../lib/userStore';
@@ -11,7 +11,6 @@ const Adduser = () => {
     const {currentUser} = useUserStore();
 
     const handleSearch = async (e) => {
-
         e.preventDefault();
         const formData = new FormData(e.target);
         const username = formData.get("username");
@@ -41,7 +40,15 @@ const Adduser = () => {
         const chatRef = collection(db, "chats");
         const userChatsRef = collection(db, "userchats");
         try {
-
+            const currentChatsRef = await getDoc(doc(userChatsRef,currentUser.id))
+            // console.log(currentChatsRef.data())
+            const currentChats = currentChatsRef.data();
+            for(const item of currentChats.chats){
+                if(item.recieverId == user.id){
+                    toast.error("User already added");
+                    return;
+                }
+            }
             const newChatRef = doc(chatRef);
 
             await setDoc(newChatRef, {
@@ -67,7 +74,7 @@ const Adduser = () => {
                 }),
             });
 
-            console.log(newChatRef.id);
+            // console.log(newChatRef.id);
             
         } catch (error) {
             toast.error(error.message);
